@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.acme.matnrtabling.domain.PlanTable;
 import org.acme.matnrtabling.domain.Product;
 import org.acme.matnrtabling.domain.ProductMatnr;
+import org.acme.matnrtabling.domain.ResDateOverLoadProductivity;
 import org.acme.matnrtabling.domain.Resource;
 import org.acme.matnrtabling.domain.WorkCalendar;
+import org.acme.matnrtabling.domain.DeliverInfo;
 import org.acme.matnrtabling.solver.PlanTableConstraintProvider;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
@@ -77,14 +79,14 @@ public class MatnrTableApp {
       + " |");
       System.out.println("|-------------|" + "-------|".repeat(dateList.size()));
     }
-    System.out.println("-->Product 2024-09-25 production Detail:");
+    System.out.println("-->Product 2024-09-15 production Detail:");
     int c1 = 1;
     int c2 = 1;
     for (Product pro : planTable.getProduct()) {
-      if (pro.getWorkCalendar().getWorkDate().isEqual(LocalDate.of(2024, 9, 25)) && pro.getResource().getType().equals("重卡")) {
+      if (pro.getWorkCalendar().getWorkDate().isEqual(LocalDate.of(2024, 9, 15)) && pro.getResource().getType().equals("重卡")) {
         System.out.println("[重卡]" + (c1++) + ": " + pro.getPname() + "|matnr:" + pro.getMatnr().getMatnr() + "|pri:" + pro.getMatnr().getPri());
       }
-      if (pro.getWorkCalendar().getWorkDate().isEqual(LocalDate.of(2024, 9, 25)) && pro.getResource().getType().equals("轻卡")) {
+      if (pro.getWorkCalendar().getWorkDate().isEqual(LocalDate.of(2024, 9, 15)) && pro.getResource().getType().equals("轻卡")) {
         System.out.println("[轻卡]" + (c2++) + ": " + pro.getPname() + "|matnr:" + pro.getMatnr().getMatnr() + "|pri:" + pro.getMatnr().getPri());
       }
     }
@@ -92,21 +94,22 @@ public class MatnrTableApp {
 
   public static PlanTable generateDemoData() {
     List<WorkCalendar> workCalendarList = new ArrayList<>(15);
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 15), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 16), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 17), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 18), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 19), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 20), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 21), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 22), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 23), true));
+    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 24), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 25), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 26), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 27), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 28), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 29), true));
     workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 9, 30), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 1), false));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 2), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 3), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 4), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 5), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 6), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 7), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 8), true));
-    workCalendarList.add(new WorkCalendar(LocalDate.of(2024, 10, 9), true));
     
     // 生产料号
     ProductMatnr matnr1_1 = new ProductMatnr("sap-001-1", "sap-001-1-abcd", 1, 0);
@@ -114,70 +117,110 @@ public class MatnrTableApp {
     ProductMatnr matnr2_1 = new ProductMatnr("sap-002-1", "sap-002-1-abcd", 1, 0);
 
     // 生产资源 [产线]
-    List<Resource> resourceList = new ArrayList<>(2);
-    resourceList.add(new Resource("ZZ", "Q11", "q11", "重卡", matnr1_1, 8, 1, 1, true));
-    //resourceList.add(new Resource("ZZ", "Q12", "q12", "重卡", 2, 2, 1, true));
-    //resourceList.add(new Resource("ZZ", "Q12", "q12", "重卡", 1, 3, 1, true));
-    resourceList.add(new Resource("ZZ", "Q21", "q22", "轻卡", matnr2_1, 5, 1, 1, true));
+    List<Resource> resourceList = new ArrayList<>(3);
+    resourceList.add(new Resource("ZZ", "Q11", "q11", "重卡", matnr1_1, 5, 1, 1, 0, null, false));
+    resourceList.add(new Resource("ZZ", "Q12", "q12", "重卡", matnr1_2, 10, 2, 1, 2, null, false));
+    resourceList.add(new Resource("ZZ", "Q21", "q22", "轻卡", matnr2_1, 5, 1, 1, 0, null, false));
     
-    // 生产产品
-    List<Product> productList = new ArrayList<>();  // 按交期 生成待排产产品列表
-    long id = 0;
-    productList.add(new Product(id++, "product-11", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-12", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-13", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-14", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-15", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-16", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-17", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-18", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-19", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 26), false, null, "重卡"));
-    productList.add(new Product(id++, "product-t1", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), true, LocalDate.of(2024, 9, 25), "重卡"));
-    productList.add(new Product(id++, "product-t2", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), true, LocalDate.of(2024, 9, 25), "重卡"));
-    productList.add(new Product(id++, "product-110", matnr1_2, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-111", matnr1_2, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-112", matnr1_2, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-113", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-114", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-115", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-116", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-117", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-118", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-119", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-120", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-121", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-122", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-123", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-124", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-125", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-126", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-127", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-128", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-129", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-130", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-131", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-132", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-133", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-134", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    productList.add(new Product(id++, "product-135", matnr1_1, "K9", 9, 30, LocalDate.of(2024, 9, 30), false, null, "重卡"));
-    
-    productList.add(new Product(id++, "product-t3", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), true, LocalDate.of(2024, 9, 29), "轻卡"));
-    productList.add(new Product(id++, "product-t4", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), true, LocalDate.of(2024, 9, 29), "轻卡"));
-    productList.add(new Product(id++, "product-t5", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), true, LocalDate.of(2024, 9, 29), "轻卡"));
-    productList.add(new Product(id++, "product-21", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-22", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-23", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-24", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-25", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-26", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-27", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-28", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-29", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-210", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-211", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-212", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
-    productList.add(new Product(id++, "product-213", matnr2_1, "K8", 10, 9, LocalDate.of(2024, 10, 9), false, null, "轻卡"));
+    // 获取交期列表
+    List<DeliverInfo> deliverList = new ArrayList<DeliverInfo>();
+    DeliverInfo deliver1 = new DeliverInfo(LocalDate.of(2024, 9, 16), 9, 0, null, getWorkDayCount(workCalendarList, LocalDate.of(2024, 9, 16)), matnr1_1);
+    DeliverInfo deliver2 = new DeliverInfo(LocalDate.of(2024, 9, 17), 15, 0, null, getWorkDayCount(workCalendarList, LocalDate.of(2024, 9, 17)), matnr1_1);
+    DeliverInfo deliver3 = new DeliverInfo(LocalDate.of(2024, 9, 30), 12, 0, null, getWorkDayCount(workCalendarList, LocalDate.of(2024, 9, 30)), matnr1_1);
+    DeliverInfo deliver4 = new DeliverInfo(LocalDate.of(2024, 9, 30), 9, 3, LocalDate.of(2024, 9, 25), getWorkDayCount(workCalendarList, LocalDate.of(2024, 9, 30)), matnr2_1);
+    DeliverInfo deliver5 = new DeliverInfo(LocalDate.of(2024, 9, 30), 56, 0, null, getWorkDayCount(workCalendarList, LocalDate.of(2024, 9, 30)), matnr1_2);
+    deliverList.add(deliver1);
+    deliverList.add(deliver2);
+    deliverList.add(deliver3);
+    deliverList.add(deliver4);
+    deliverList.add(deliver5);
+
+    // 根据交期 生成产品列表
+    List<Product> productList = generateProductData(deliverList, resourceList, 9);
+
+    // 计算产线产能是否满足生产需求 不满足则设置 超产能值overload;
+    for (Resource res : resourceList) {
+      String matnr = res.getMatnr().getMatnr();
+      int productivity = res.getProductivity();  // 产线正常产能
+      int totalProductivity = 0;  // 当前产线 计划周期内最大产量
+      int product_qty = 0;        // 当前产线 计划排产数
+
+      int pre_qty = res.getInventoryQty();       // 交期数量和 默认为初始库存
+      List<ResDateOverLoadProductivity> productivityList = new ArrayList<ResDateOverLoadProductivity>();
+      for (DeliverInfo deliver : deliverList) {
+        if (matnr.equals(deliver.getProductMatnr().getMatnr())) {
+          System.out.println("-->getDeliverDate:" + matnr + "|" + deliver.getDeliverDate());
+          res.setProductivityList(null);
+          LocalDate day1 = LocalDate.of(2024, 9, 15);       // 排产开始日期
+          int day_count = deliver.getProductDayCount();     // 可排产天数 TODO 需减去(生产周期-1)
+          int qty = pre_qty + deliver.getDemandQuantity();  // 需求数量
+          totalProductivity = productivity * day_count;     // 正常产能最大总产量
+          if (totalProductivity < qty) {                    // 是否超产能
+            int exps = qty - totalProductivity;
+            int plus = 0;       // 产能超载值
+            if (exps % day_count == 0) {
+              plus = exps / day_count;
+            } else {
+              plus = exps / day_count + 1;
+            }
+            while (exps > 0) {
+              System.out.println("---->exps:" + exps + "|" + plus);
+              int add = (exps > plus)? plus : exps;   // 当前工作日产能超载值
+              System.out.println("---->" + day1.getDayOfMonth() + "|add:" + add + "|plus:" + plus);
+              ResDateOverLoadProductivity p1 = new ResDateOverLoadProductivity(day1, add);
+              productivityList.add(p1);
+              day1 = day1.plusDays(1);
+              exps -= add;
+            } 
+          }
+          pre_qty += qty;
+        }
+      }
+      res.setProductivityList(productivityList);
+    }
 
     return new PlanTable(workCalendarList, resourceList, productList);
+  }
+
+  public static List<Product> generateProductData(List<DeliverInfo> deliverList, List<Resource> resourceList, int plan_month) {
+    List<Product> productList = new ArrayList<>();
+    int id = 1;
+    //new Product(id++, "product-26", matnr2_1, "K8", 9, 30, LocalDate.of(2024, 9, 30), false, null, "轻卡");
+    for (DeliverInfo deliver : deliverList) {
+      int demandQuantity = deliver.getDemandQuantity();
+      int trialQuantity = deliver.getTrialQuantity();
+      
+      for(int i = 0; i < trialQuantity; i++){
+        productList.add(new Product(id++, "product-" + id, deliver.getProductMatnr(), "K8", plan_month, 30, deliver.getDeliverDate(), true, deliver.getTrialDate(), "重卡"));
+      }
+      for(int i = 0; i < demandQuantity - trialQuantity; i++){
+        // 如果存在初始库存 则相应减少生成的产品数量
+        Boolean InventoryFlag = true;
+        for (Resource res : resourceList) {
+          String matnr = res.getMatnr().getMatnr();
+          if (matnr.equals(deliver.getProductMatnr().getMatnr())) {
+            if (res.getInventoryQty() > 0) {
+              InventoryFlag = false;
+              res.setInventoryQty(res.getInventoryQty() - 1);
+            }
+          }
+        }
+        if (InventoryFlag) {
+          productList.add(new Product(id++, "product-" + id, deliver.getProductMatnr(), "K8", plan_month, 30, deliver.getDeliverDate(), false, null, "重卡"));
+        }
+      }
+    }
+    return productList;
+  }
+
+  // 计算可排产天数 扣除非工作日
+  public static int getWorkDayCount(List<WorkCalendar> workCalendarList, LocalDate workDate){
+    int dayCount = 0;
+    for (WorkCalendar cal : workCalendarList) {
+      if (cal.getWorkDate().compareTo(workDate) <= 0 && cal.getWorkDay()) {
+        dayCount++;
+      }
+    }
+    return dayCount;
   }
 }
