@@ -17,7 +17,7 @@ public class PlanTable {
   
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    private List<Resource> resourceList;
+    private List<ProductResource> resourceList;
     
     @PlanningEntityCollectionProperty
     private List<Product> productList;
@@ -28,7 +28,7 @@ public class PlanTable {
     public PlanTable() {
     }
 
-    public PlanTable(List<WorkCalendar> workCalendarList, List<Resource> resourceList, List<Product> productList) {
+    public PlanTable(List<WorkCalendar> workCalendarList, List<ProductResource> resourceList, List<Product> productList) {
         this.workCalendarList = workCalendarList;
         this.resourceList = resourceList;
         this.productList = productList;
@@ -40,7 +40,7 @@ public class PlanTable {
     public List<WorkCalendar> getWorkCalendar() {
         return workCalendarList;
     }
-    public List<Resource> getResource() {
+    public List<ProductResource> getResource() {
         return resourceList;
     }
     public List<Product> getProduct() {

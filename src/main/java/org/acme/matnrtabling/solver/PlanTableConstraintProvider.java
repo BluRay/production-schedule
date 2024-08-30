@@ -21,7 +21,7 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
             // *******Hard constraints***************
             resTypeMatch(constraintFactory),        // 硬约束 [产线约束] 产品只能在指定类型的资源上生产
-            proMonthMatch(constraintFactory),       // 硬约束 [DPU约束] 产品排产月份
+            proMonthMatch(constraintFactory),       // 硬约束 [DPT约束] 产品排产月份
             proDeliverMatch(constraintFactory),     // 硬约束 [交期约束] 排产日期不能大于交期
             proTrialMatch(constraintFactory),       // 硬约束 [试制约束] 试制车 必需在指定试制日期生产
             workDayMatch(constraintFactory),        // 硬约束 非工作日不能生产
@@ -29,12 +29,8 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
             // *******Soft constraints***************
             productivityMatch(constraintFactory),   // 软约束 [产能约束] 每天产量不能大于最大产能
             productivityMatch2(constraintFactory)
-            //balancedMatch(constraintFactory),
-            //priMatch(constraintFactory)           // 软约束 优先级高的先安排生产
+            // priMatch(constraintFactory)           // 软约束 优先级高的先安排生产
             // TODO 按物料优先级安排生产 
-            // TODO 【来单-库存约束】 库存少的优先：
-            // 按日期产线分组；计算 初始库存 + (当前日期-生产周期)之前的产量之和 - 交付日期在当前日期之前的交付数量之和 
-            // = 当前日期的实际库存 数值低的优先
         };
     }
 
@@ -43,7 +39,6 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
         return constraintFactory
             .forEach(Product.class)
             .filter(product -> product.getResource() != null 
-                //&& !product.getRequiredResType().equals(product.getResource().getType()))
                 && !product.getMatnr().getMatnr().equals(product.getResource().getMatnr().getMatnr()))
             .penalizeLong(HardSoftLongScore.ONE_HARD, product -> a)
             .asConstraint("resTypeMatch");
@@ -85,14 +80,13 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
             .asConstraint("proTrialMatch");
     }
 
-    // 硬约束 每天产量不能大于最大产能
+    // 软约束 每天产量不能大于最大产能
     Constraint productivityMatch(ConstraintFactory constraintFactory) {
         return constraintFactory
             .forEach(Product.class)
             .groupBy(Product::getResource, Product::getWorkCalendar, countDistinctLong(Product::getId))
             .filter((res, date, proCount) -> proCount > res.getProductivity())
             .penalizeLong(HardSoftLongScore.ofSoft(100), (res, date, proCount) -> a)
-            //.rewardLong(HardSoftLongScore.ofSoft(100), (res, date, proCount) -> a)
             .asConstraint("productivityMatch");
     }
     Constraint productivityMatch2(ConstraintFactory constraintFactory) {
@@ -127,9 +121,9 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
     Constraint balancedMatch_bak1(ConstraintFactory constraintFactory) {
         return constraintFactory
             .forEach(Product.class)
-            .groupBy(Product::getWorkCalendar, (product) -> product.getResource().getType(), countDistinctLong(Product::getId))
-            .filter((date, type, proCount) -> proCount > 1)
-            .penalizeLong(HardSoftLongScore.ofSoft(100), (date, type, proCount) -> proCount*a)
+            .groupBy(Product::getWorkCalendar, (product) -> product.getResource().getProductLine().getLineName(), countDistinctLong(Product::getId))
+            .filter((date, line, proCount) -> proCount > 1)
+            .penalizeLong(HardSoftLongScore.ofSoft(100), (date, line, proCount) -> proCount*a)
             .asConstraint("balancedMatch_bak1");
     }
 

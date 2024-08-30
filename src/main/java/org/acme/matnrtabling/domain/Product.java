@@ -23,7 +23,7 @@ public class Product {
     @PlanningVariable
     private WorkCalendar workCalendar;
     @PlanningVariable
-    private Resource resource;
+    private ProductResource resource;
 
     // No-arg constructor required for OptaPlanner
     public Product() {
@@ -40,7 +40,7 @@ public class Product {
         this.trial_date = trial_date;
         this.requiredResType = requiredResType;
     }
-    public Product(long id, String pname, ProductMatnr matnr, String vehicle_type, int product_month, int product_day, LocalDate deliver_date, boolean trial_flag, LocalDate trial_date, String requiredResType, WorkCalendar workCalendar, Resource resource) {
+    public Product(long id, String pname, ProductMatnr matnr, String vehicle_type, int product_month, int product_day, LocalDate deliver_date, boolean trial_flag, LocalDate trial_date, String requiredResType, WorkCalendar workCalendar, ProductResource resource) {
         this(id, pname, matnr, vehicle_type, product_month, product_day, deliver_date, trial_flag, trial_date, requiredResType);
         this.workCalendar = workCalendar;
         this.resource = resource;
@@ -88,10 +88,10 @@ public class Product {
         this.workCalendar = workCalendar;
     }
     
-    public Resource getResource() {
+    public ProductResource getResource() {
         return resource;
     }
-    public void setResource(Resource resource) {
+    public void setResource(ProductResource resource) {
         this.resource = resource;
     }
 }

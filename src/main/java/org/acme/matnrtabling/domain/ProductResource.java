@@ -3,25 +3,23 @@ package org.acme.matnrtabling.domain;
 import java.util.List;
 import java.time.LocalDate;
 
-public class Resource {
-  private String workshop;
+// 生产资源 [产线 物料 对应关系]
+public class ProductResource {
   private String name;
   private String code;
-  private String type;
-  private ProductMatnr matnr;
+  private ProductLine line;       // 产线
+  private ProductMatnr matnr;     // 生产物料
   private int productivity;       // 产能
   private int pri;                // 优先级
   private int productcycle;       // 生产周期
   private int inventoryQty;       // 初始库存
-  // private int minBatch;        // 最小生产批次
   List<ResDateOverLoadProductivity> productivityList;
   private boolean status;
   
-  public Resource(String workshop, String name, String code, String type, ProductMatnr matnr, int productivity, int pri, int productcycle, int inventoryQty, List<ResDateOverLoadProductivity> productivityList, boolean status) {
-      this.workshop = workshop;
+  public ProductResource(String name, String code, ProductLine line, ProductMatnr matnr, int productivity, int pri, int productcycle, int inventoryQty, List<ResDateOverLoadProductivity> productivityList, boolean status) {
       this.name = name;
       this.code = code;
-      this.type = type;
+      this.line = line;
       this.matnr = matnr;
       this.productivity = productivity;
       this.pri = pri;
@@ -31,17 +29,14 @@ public class Resource {
       this.status = status;
   }
   
-  public String getWorkshop() {
-      return workshop;
-  }
   public String getName() {
       return name;
   }
   public String getCode() {
       return code;
   }
-  public String getType() {
-      return type;
+  public ProductLine getProductLine() {
+      return line;
   }
   public ProductMatnr getMatnr() {
       return matnr;
