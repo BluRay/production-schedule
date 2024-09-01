@@ -15,4 +15,7 @@ public class ResDateOverLoadProductivity {
   public int getOverLoadProductivity() {
       return overLoadProductivity;
   }
+  public void setOverLoadProductivity(int overLoadProductivity) {
+      this.overLoadProductivity = overLoadProductivity;
+  }
 }

@@ -141,13 +141,13 @@ public class MatnrTableApp {
     deliverList.add(deliver4);
     deliverList.add(deliver5); **/
     // 从数据库或文件读取交期列表
-    /** 测试文件 d:\product_div.txt
+    /** 测试文件 d:\product_div.txt  
   交期     |  交付数量 | 试制数量  |  试制日期 |   物料   | 物料优先级
 2024| 9|16|    11    |    0    |0000| 0| 0|sap-001-1|1
 2024| 9|25|    15    |    2    |2024| 9|20|sap-001-1|1
 2024| 9|30|    12    |    0    |0000| 0| 0|sap-001-1|1
      */
-    String fileName = "D:\\product_div.txt";
+    String fileName = "/Users/nuc/Documents/product_div.txt";
     try (Scanner sc = new Scanner(new FileReader(fileName))) {
       int line_count = 0;
       while (sc.hasNextLine()) {  //按行读取字符串
@@ -182,13 +182,13 @@ public class MatnrTableApp {
       int cycle = res.getProductcycle() - 1;      // 生产周期
       int pre_qty = res.getInventoryQty();        // 交期数量和 默认为初始库存
       int pre_day_count = 0;                      // 历史交期天数 用于计算本交期 与上一交期 之间的产能是否满足需求
-      LocalDate day1 = LocalDate.of(2024, 9, 15); // 排产开始日期
+      // LocalDate day1 = LocalDate.of(2024, 9, 15); // 排产开始日期
       List<ResDateOverLoadProductivity> productivityList = new ArrayList<ResDateOverLoadProductivity>();
       for (DeliverInfo deliver : deliverList) {
         if (matnr.equals(deliver.getProductMatnr().getMatnr())) {
           System.out.println("-->getDeliverDate:" + matnr + "|" + deliver.getDeliverDate());
           res.setProductivityList(null);
-          // LocalDate day1 = LocalDate.of(2024, 9, 15);          // 排产开始日期
+          LocalDate day1 = LocalDate.of(2024, 9, 15);           // 排产开始日期
           int day_count = deliver.getProductDayCount() - cycle;   // 可排产天数 减去(生产周期-1)
           int qty = pre_qty + deliver.getDemandQuantity();        // 需求数量
           totalProductivity = productivity * day_count;           // 正常产能最大总产量
@@ -205,9 +205,22 @@ public class MatnrTableApp {
               while (exps > 0) {
                 System.out.println("---->exps:" + exps + "|" + plus);
                 int add = (exps > plus)? plus : exps;   // 当前工作日产能超载值
+                // 如果当前日期已设置 OverLoad 需替换 -> 只增加不减少
+                boolean cc = true;
+                for (ResDateOverLoadProductivity overload : productivityList) {
+                  if(overload.getWorkDate().isEqual(day1)){
+                    cc = false;
+                    if (add > overload.getOverLoadProductivity()){
+                    	overload.setOverLoadProductivity(add);
+                    }
+                  }
+                }
+                
                 System.out.println("---->" + day1.getDayOfMonth() + "|add:" + add + "|plus:" + plus);
-                ResDateOverLoadProductivity p1 = new ResDateOverLoadProductivity(day1, add);
-                productivityList.add(p1);
+                if (cc) {
+                  ResDateOverLoadProductivity p1 = new ResDateOverLoadProductivity(day1, add);
+                  productivityList.add(p1);
+                }
                 day1 = day1.plusDays(1);
                 exps -= add;
               } 
