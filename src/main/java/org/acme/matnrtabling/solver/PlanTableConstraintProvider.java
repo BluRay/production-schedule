@@ -7,11 +7,8 @@ import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
-import org.optaplanner.core.api.score.stream.Joiners;
 import static org.optaplanner.core.api.score.stream.ConstraintCollectors.countDistinctLong;
-import static org.optaplanner.core.api.score.stream.ConstraintCollectors.count;
-import static org.optaplanner.core.api.score.stream.ConstraintCollectors.sum;
-import static org.optaplanner.core.api.score.stream.ConstraintCollectors.sumLong;
+import org.optaplanner.core.api.score.stream.Joiners;
 
 public class PlanTableConstraintProvider implements ConstraintProvider {
     private long a = 1L;
@@ -21,16 +18,16 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
             // *******Hard constraints***************
             resTypeMatch(constraintFactory),        // 硬约束 [产线约束] 产品只能在指定类型的资源上生产
-            proMonthMatch(constraintFactory),       // 硬约束 [DPT约束] 产品排产月份
+            //proMonthMatch(constraintFactory),     // 硬约束 [DPT约束] 产品排产月份
             proDeliverMatch(constraintFactory),     // 硬约束 [交期约束] 排产日期不能大于交期
             proTrialMatch(constraintFactory),       // 硬约束 [试制约束] 试制车 必需在指定试制日期生产
             workDayMatch(constraintFactory),        // 硬约束 非工作日不能生产
 
             // *******Soft constraints***************
-            productivityMatch(constraintFactory),   // 软约束 [产能约束] 每天产量不能大于最大产能
-            productivityMatch2(constraintFactory)
-            // priMatch(constraintFactory)           // 软约束 优先级高的先安排生产
-            // TODO 按物料优先级安排生产 
+            productivityMatch(constraintFactory),   // 软约束 [产能约束1] 每天产量不能大于最大产能
+            productivityMatch2(constraintFactory),  // 软约束 [产能约束2] 每天产量不能大于最大产能 + 产能偏移值
+            balancedMatch(constraintFactory),        // 软约束 每天尽量只生产同一料号
+            balancedMatch2(constraintFactory)
         };
     }
 
@@ -97,6 +94,23 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
             .rewardLong(HardSoftLongScore.ofSoft(100), (res, date, proCount) -> a)
             .asConstraint("productivityMatch2");
     }
+    Constraint balancedMatch(ConstraintFactory constraintFactory) {
+        return constraintFactory
+            .forEach(Product.class)
+            //.filter((product) -> product.getMatnr().getStatus() == 1)
+            .groupBy((product) -> product.getResource().getProductLine().getLineName(), Product::getWorkCalendar, countDistinctLong(Product::getMatnr))
+            .filter((line, date, count) -> count > 1)
+            .penalizeLong(HardSoftLongScore.ofSoft(30), (line, date, proCount) -> a)
+            .asConstraint("balancedMatch");
+    }
+    Constraint balancedMatch2(ConstraintFactory constraintFactory) {
+        return constraintFactory
+            .forEach(Product.class)
+            .groupBy(Product::getResource, Product::getWorkCalendar, countDistinctLong(Product::getId))
+            .filter((res, date, proCount) -> proCount == res.getProductivity())
+            .rewardLong(HardSoftLongScore.ofSoft(10), (line, date, proCount) -> a)
+            .asConstraint("balancedMatch2");
+    }
 
     // 硬约束 非工作日不能生产
     Constraint workDayMatch(ConstraintFactory constraintFactory) {
@@ -105,26 +119,6 @@ public class PlanTableConstraintProvider implements ConstraintProvider {
             .filter(product -> product.getWorkCalendar() != null && !product.getWorkCalendar().getWorkDay())
             .penalizeLong(HardSoftLongScore.ONE_HARD, product -> a)
             .asConstraint("workDayMatch");
-    }
-
-    // 软约束 按日期先后安排生产
-    // bak1软约束 每天每台资源尽量都安排生产
-    Constraint balancedMatch(ConstraintFactory constraintFactory) {
-        return constraintFactory
-            .forEach(Product.class)
-            .groupBy(Product::getWorkCalendar, Product::getResource, (product) -> product.getResource().getProductivity(), countDistinctLong(Product::getId))
-            //.filter((date, res, productivity, proCount) -> Integer.valueOf(proCount + "") != productivity)
-            .filter((date, res, productivity, proCount) -> Integer.valueOf(proCount + "") > 0)
-            .penalizeLong(HardSoftLongScore.ofSoft(100), (date, res, productivity, proCount) -> Math.abs(productivity - Integer.valueOf(proCount + "")) * a)
-            .asConstraint("balancedMatch");
-    }
-    Constraint balancedMatch_bak1(ConstraintFactory constraintFactory) {
-        return constraintFactory
-            .forEach(Product.class)
-            .groupBy(Product::getWorkCalendar, (product) -> product.getResource().getProductLine().getLineName(), countDistinctLong(Product::getId))
-            .filter((date, line, proCount) -> proCount > 1)
-            .penalizeLong(HardSoftLongScore.ofSoft(100), (date, line, proCount) -> proCount*a)
-            .asConstraint("balancedMatch_bak1");
     }
 
     // 软约束 优先级高的先安排生产
